@@ -85,6 +85,21 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('products')" :active="request()->routeIs('products')">
+                {{ __('Produtos') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('link')" :active="request()->routeIs('link')">
+                {{ __('Link de Pagamento') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('invoices')" :active="request()->routeIs('invoices')">
+                {{ __('Pagamentos') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('statement')" :active="request()->routeIs('statement')">
+                {{ __('Extrato') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('config.checkout')" :active="request()->routeIs('config.checkout')">
+                {{ __('Configurações') }}
+            </x-responsive-nav-link>
         </div>
 
         <!-- Responsive Settings Options -->

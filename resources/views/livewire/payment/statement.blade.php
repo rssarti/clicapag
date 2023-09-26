@@ -16,7 +16,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr class="h-20">
+        <tr class="h-20 rounded-lg">
             <td>
                 <b>Recebimento Via Link</b>
                 <br/>

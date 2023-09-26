@@ -1,0 +1,9 @@
+[{
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+        "namespace": "android_app",
+        "package_name": "com.clicabrasil.clicapag",
+        "sha256_cert_fingerprints":
+        ["DC:32:9B:56:96:0C:06:45:20:BF:5B:D9:1F:54:29:B4:8D:3B:12:97:3D:F8:0D:98:B3:6E:F2:4B:52:AF:2A:27"]
+    }
+}]

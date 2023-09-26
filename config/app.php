@@ -16,7 +16,11 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'ClicaPag'),
+
+    'ZOOP_KEY' => env('ZOOP_KEY'),
+    'ZOOP_MARKETPLACE' => env('ZOOP_MARKETPLACE'),
+    'ZOOP_SELLER' => env('ZOOP_SELLER'),
 
     /*
     |--------------------------------------------------------------------------

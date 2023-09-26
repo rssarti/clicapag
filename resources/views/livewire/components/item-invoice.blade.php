@@ -1,4 +1,4 @@
-<a href="#" class="flex flex-row bg-gray-100 dark:bg-white hover:bg-gray-200 sm:rounded-lg p-4 mb-3 w-full">
+<a href="#" class="flex flex-row bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 hover:bg-gray-200 sm:rounded-lg p-4 mb-3 w-full">
     <div class="basis-1/1">
         <p><b>Combo: Hamburguer + Batata Frita com Cheeder</b></p>
         <small>Pago por: Rafael Sarti - 22/09/2023 11:41:11</small>
