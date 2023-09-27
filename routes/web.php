@@ -18,6 +18,10 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
+Route::get('/payment', function () {
+    return response()->json();
+});
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
