@@ -9,9 +9,10 @@ class PaymentService
 {
 
     public $data ;
+    public $client ;
     public function setClientPayment($data)
     {
-        $this->data = $data ;
+        $this->client = $data ;
     }
 
     public function setLink($id)
@@ -29,9 +30,19 @@ class PaymentService
         $this->data['api_key_id'] = $id ;
     }
 
-    public function setType($id)
+    public function setType($type)
     {
-        $this->data['type'] = $id ;
+        $this->data['type_payment'] = $type ;
+    }
+
+    public function setAmount($amount)
+    {
+        $this->data['amount'] = $amount ;
+    }
+
+    public function setSellerReceipt($seller_id)
+    {
+        $this->data['seller_id_receipt'] = $seller_id ;
     }
 
     public function save()
@@ -39,9 +50,17 @@ class PaymentService
         $item = new Payment() ;
 
         $item->hash = Str::uuid() ;
-        $item->type = $this->data['type'] ;
+
+
+        $item->status = 'A' ;
+        $item->seller_receipt = $this->data['seller_id_receipt'] ;
         $item->user_id = $this->data['user_id'] ;
         $item->amount = $this->data['amount'] ;
-        $item->name = ($this->data['name']!=null) ? $this->data['name'] : null ;
+        $item->client = $this->client ;
+
+        $item->save() ;
+        dd($item) ;
+
+
     }
 }

@@ -34,7 +34,12 @@
                 </div>
             </div>
             <p class="mt-8 text-lg font-medium">Método de Pagamento</p>
-            <form class="mt-5 grid gap-6">
+            <form wire:submit.prevent="save()" class="mt-5 grid gap-6">
+                @if($methodError)
+                    <div class="relative">
+                        <span class="bg-red-500 w-full p-2 rounded-lg animate-pulse"> O método de pagamento deve ser selecionado</span>
+                    </div>
+                @endif
                 <div class="relative">
                     <input wire:model.live="form.type_payment" value="b" class="peer hidden" id="radio_1" type="radio" name="radio">
                     <span class="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white"></span>
@@ -65,7 +70,7 @@
                         </div>
                     </label>
                 </div>
-            </form>
+
         </div>
         <div class="mt-10 bg-gray-50 px-4 pt-8 lg:mt-0 rounded-lg text-black">
             <p class="text-xl font-medium dark:text-gray-800">Detalhes de Pagamento</p>
@@ -73,11 +78,11 @@
             <div class="">
                 <label for="email" class="mt-4 mb-2 block text-sm font-medium">Nome</label>
                 <div class="relative">
-                    <input wire:model="form.name" type="text" id="text" name="email" class="w-full rounded-md border border-gray-200 px-4 py-3 text-sm shadow-sm outline-none focus:z-10 focus:border-blue-500 focus:ring-blue-500">
+                    <input wire:model="form.name" type="text" id="text" name="email" class="w-full rounded-md border border-gray-200 px-4 py-3 text-sm shadow-sm outline-none focus:z-10 focus:border-blue-500 focus:ring-blue-500" required>
                 </div>
                 <label for="email" class="mt-4 mb-2 block text-sm font-medium">E-mail</label>
                 <div class="relative">
-                    <input wire:model="form.email" type="text" id="text" name="email" class="w-full rounded-md border border-gray-200 px-4 py-3 text-sm shadow-sm outline-none focus:z-10 focus:border-blue-500 focus:ring-blue-500">
+                    <input wire:model="form.email" type="text" id="text" name="email" class="w-full rounded-md border border-gray-200 px-4 py-3 text-sm shadow-sm outline-none focus:z-10 focus:border-blue-500 focus:ring-blue-500" required>
                 </div>
                 <p class="text-xl font-medium dark:text-gray-800 mt-6">Endereço</p>
                 <p class="text-gray-400 mb-3">Confirme o seu endereço</p>
@@ -99,7 +104,7 @@
                 <div class="flex flex-col sm:flex-row">
                     <div class="w-full lg:w-2/4 mb-2 mr-3">
                         <label for="password" class="block mb-2 text-sm font-medium text-gray-900">Complemento</label>
-                        <input wire:model="form.address_complement" type="text" id="password" class="w-full rounded-md border border-gray-200 px-4 py-3 text-sm shadow-sm outline-none focus:z-10 focus:border-blue-500 focus:ring-blue-500" required>
+                        <input wire:model="form.address_complement" type="text" id="password" class="w-full rounded-md border border-gray-200 px-4 py-3 text-sm shadow-sm outline-none focus:z-10 focus:border-blue-500 focus:ring-blue-500">
                     </div>
                     <div class="w-full lg:w-2/4 mb-2 mr-3">
                         <label for="password" class="block mb-2 text-sm font-medium text-gray-900">Bairro</label>
@@ -205,8 +210,9 @@
                     <p class="text-2xl font-semibold text-gray-900">R$ {{ number_format((float)$data['amount'], 2, ",", ".") }}</p>
                 </div>
             </div>
-            <button class="mt-4 mb-8 w-full rounded-md bg-[#ff6600] hover:bg-[#ff4800] px-6 py-3 font-medium text-white">Finalizar Compra</button>
+            <button type="submit" class="mt-4 mb-8 w-full rounded-md bg-[#ff6600] hover:bg-[#ff4800] px-6 py-3 font-medium text-white">Finalizar Compra</button>
         </div>
+        </form>
     </div>
     <script>
         $(document).ready(function() {

@@ -20,6 +20,13 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::post('/payment', function (Request $request) {
+    return response()->json([
+        "amount" => "1",
+        "max_installments" => 3,
+        "seller_id" => "7f998395e5de4f2aa700d46d8079cbcd"
+    ]) ;
+}) ;
 Route::post('/auth', function (Request $request) {
     $request->validate([
         'email' => 'required|email',

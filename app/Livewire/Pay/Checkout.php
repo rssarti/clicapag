@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Pay;
 
+use App\Models\User;
 use App\Services\PaymentService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -11,6 +12,7 @@ class Checkout extends Component
 {
 
     public $data ;
+    public $methodError = false ;
     public $link ;
     public $form = [
         'type_payment' => '',
@@ -57,9 +59,18 @@ class Checkout extends Component
 
     public function save()
     {
+        if($this->form['type_payment']=="") {
+            $this->methodError = true ;
+            return false ;
+        }
+
         $payment = new PaymentService() ;
         $payment->setClientPayment($this->form);
-        $payment->setLink($this->data->id);
-        $payment->setUserCreate($this->data->user_id);
+        $payment->setLink($this->data['id']);
+        $payment->setSellerReceipt('direct');
+        $payment->setUserCreate($this->data['user_id']);
+        $payment->setType($this->form['type_payment']);
+        $payment->setAmount($this->data['amount']);
+        $payment->save();
     }
 }

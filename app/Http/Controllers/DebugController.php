@@ -10,6 +10,6 @@ class DebugController extends Controller
     public function debug()
     {
         $zoop = new Zoop() ;
-        dd($zoop->getPlan()) ;
+        dd($zoop->getSellers()) ;
     }
 }

@@ -9,6 +9,7 @@ class Link extends Component
 
     public $data ;
 
+
     public function mount($uuid)
     {
         $this->data = \App\Models\Link::where('uuid', $uuid)->first() ;
