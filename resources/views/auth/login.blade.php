@@ -7,7 +7,7 @@
 
         <!-- Email Address -->
 
-        <div class="bg-red-600 p-2 rounded-lg mb-6 mt-6 dark:text-white">Serviço temporariamente indisponível por falha em nossos parceiros. Retornamos em breve!</div>
+        <div class="bg-red-600 p-2 rounded-lg mb-6 mt-6 text-white">Serviço temporariamente indisponível por falha em nossos parceiros. Retornamos em breve!</div>
 
 {{--        <div>--}}
 {{--            <x-input-label for="email" :value="__('E-mail')" />--}}
