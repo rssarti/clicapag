@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Buyer;
+use App\Models\Payment;
+use App\Observers\BuyerObserver;
+use App\Observers\PaymentObserver;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -25,7 +29,8 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Buyer::observe(BuyerObserver::class);
+        Payment::observe(PaymentObserver::class);
     }
 
     /**

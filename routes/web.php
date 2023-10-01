@@ -43,6 +43,7 @@ Route::middleware('auth')->group(function () {
 
 Route::get('pay/{uuid}', \App\Livewire\Pay\Link::class)->name('pay.link') ;
 Route::get('pay/{uuid}/checkout', \App\Livewire\Pay\Checkout::class)->name('pay.checkout') ;
+Route::get('pay/{uuid}/payment', \App\Livewire\Pay\Pay::class)->name('pay') ;
 
 Route::get('/debug', [\App\Http\Controllers\DebugController::class, 'debug']);
 require __DIR__.'/auth.php';

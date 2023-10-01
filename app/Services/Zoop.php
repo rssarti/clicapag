@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Buyer;
 use App\Models\UserCard;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -16,62 +17,109 @@ class Zoop
 
     public $card ;
 
+    public $marplace_id = ""  ;
+    public $seller = ""  ;
 
+    public $buyer ;
 
-    public function __construct()
+    public function __construct($dev=false)
     {
-        $this->user = Auth::user() ;
-        $this->authZoop = base64_encode(config('app.ZOOP_KEY').":") ;
+        if(!$dev) {
+
+            $this->authZoop = base64_encode(config('app.ZOOP_KEY').":") ;
+            $this->marplace_id = config('app.ZOOP_MARKETPLACE') ;
+            $this->seller = config('app.ZOOP_SELLER') ;
+        } else {
+
+            $this->authZoop = base64_encode(config('app.ZOOP_KEY_DEV').":") ;
+            $this->marplace_id = config('app.ZOOP_MARKETPLACE_DEV') ;
+            $this->seller = config('app.ZOOP_SELLER_DEV') ;
+        }
+
     }
 
-    public function createBuyer()
+    public function setSeller($seller_id)
     {
-        if($this->user->external_payment_id) {
-            return false ;
-        }
+        $this->seller = $seller_id ;
+    }
+
+    public function setBuyer($buyer_id)
+    {
+        $this->buyer = $buyer_id ;
+    }
+
+    public function createBuyer($buyer)
+    {
+
+        $this->buyer = Buyer::find($buyer->id) ;
 
         $util = new Utils() ;
 
-        $name = explode(" ", $this->user->name) ;
-        $cont_last_name = count($name) ;
-        $cont_last_name = $cont_last_name - 1 ;
+        $data['first_name'] = $this->buyer->first_name ;
+        $data['last_name'] = $this->buyer->last_name;
+        $data['email'] = $this->buyer->email ;
+        $data['phone_number'] = $util->removeCaracteres($this->buyer->phone_number);
+        $data['taxpayer_id'] = $util->removeCaracteres($this->buyer->taxpayer_id);
+        $data['address']['line1'] = $this->buyer->address.",".$this->buyer->address_n;
+        $data['address']['line2'] = $this->buyer->address_complement;
+        $data['address']['line3'] = $this->buyer->address_line_3;
+        $data['address']['neighborhood'] = $this->buyer->address_neighborhood;
+        $data['address']['city'] = $this->buyer->address_city;
+        $data['address']['state'] = $this->buyer->address_state;
+        $data['address']['postal_code'] = $this->buyer->address_zip_code;
+        $data['address']['country_code'] = $this->buyer->address_coutry_code;
+        $data['birthdate'] = $this->buyer->birthdate ;
 
-        $data['first_name'] = (isset($name[0])) ? $name[0] : null ;
-        $data['last_name'] = (isset($name[$cont_last_name])&&$cont_last_name>0) ? $name[$cont_last_name] : null;
-        $data['email'] = $this->user->email ;
-        $data['phone_number'] = $util->removeCaracteres($this->user->celular);
-        $data['taxpayer_id'] = $util->removeCaracteres($this->user->cpf);
-        $data['address']['line1'] = $this->user->endereco;
-        $data['address']['line2'] = $this->user->complemento;
-        $data['address']['line3'] = '';
-        $data['address']['neighborhood'] = $this->user->bairro;
-        $data['address']['city'] = $this->user->cidade;
-        $data['address']['state'] = $this->user->uf;
-        $data['address']['postal_code'] = $this->user->cep;
-        $data['address']['country_code'] = 'BR';
-        $data['birthdate'] = $this->user->dt_nascimento ;
-
-        $url = 'https://api.zoop.ws/v1/marketplaces/'.config('app.ZOOP_MARKETPLACE').'/buyers' ;
+        $url = 'https://api.zoop.ws/v1/marketplaces/'.$this->marplace_id.'/buyers' ;
 
         $response = Http::withHeaders([
             'Accept' => 'application/json',
             'Authorization' => 'Basic '.$this->authZoop
         ])->post($url, $data);
 
-        $data = json_decode($response->body()) ;
+        $retorno = json_decode($response->body()) ;
 
-        $this->user->external_payment_id = $data->id ;
-        $this->user->external_payment_service = 'zoop' ;
-        $this->user->save() ;
+        $this->buyer->external_id_payment = $retorno->id ;
+        $this->buyer->service_payment = 'zoop' ;
+        $this->buyer->save() ;
+
         return json_decode($response->body()) ;
+
+    }
+
+    public function cobrarPix($payment)
+    {
+        $url = 'https://api.zoop.ws/v1/marketplaces/'.$this->marplace_id.'/transactions' ;
+
+        $data['payment_type'] = 'pix' ;
+        $data['on_behalf_of'] = $payment['seller_id'] ;
+        $data['description'] = $payment['description'] ;
+        $data['currency'] = 'BRL' ;
+        $data['amount'] = $payment['amount'] ;
+
+
+        $response = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Authorization' => 'Basic '.$this->authZoop
+        ])->post($url, $data);
+
+
+        $data = json_decode($response->body(), true) ;
+
+        if($data['status']=="pending") {
+            return $data ;
+        } else {
+            Log::error("Pagamento com Erro", $data);
+            return false ;
+        }
 
     }
 
     public function cobrarCartao($card_id, $amount)
     {
-        $url = 'https://api.zoop.ws/v1/marketplaces/'.config('app.ZOOP_MARKETPLACE').'/transactions' ;
+        $url = 'https://api.zoop.ws/v1/marketplaces/'.$this->marplace_id.'/transactions' ;
 
-        $data['on_behalf_of'] = config('app.ZOOP_SELLER') ;
+        $data['on_behalf_of'] = $this->seller ;
         $data['payment_type'] = 'credit' ;
         $data['statement_descriptor'] = 'CLICA' ;
         $data['source']['currency'] = 'BRL' ;
@@ -96,11 +144,38 @@ class Zoop
 
     }
 
+    public function createBoleto($amount)
+    {
+        $url = 'https://api.zoop.ws/v1/marketplaces/'.$this->marplace_id.'/transactions' ;
+
+        $data['on_behalf_of'] = $this->seller ;
+        $data['payment_type'] = 'boleto' ;
+        $data['customer'] = 'boleto' ;
+        $data['logo'] = 'https://clicapag.com.br/logo-w.png' ;
+        $data['currency'] = 'BRL' ;
+        $data['amount'] = $amount ;
+
+        $response = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Authorization' => 'Basic '.$this->authZoop
+        ])->post($url, $data);
+
+        $data = json_decode($response->body(), true) ;
+
+        if($data['status']=="succeeded") {
+            return $data ;
+        } else {
+            Log::error("Pagamento com Erro", $data);
+            return false ;
+        }
+
+    }
+
     public function cobrar($customer_id, $amount)
     {
-        $url = 'https://api.zoop.ws/v1/marketplaces/'.config('app.ZOOP_MARKETPLACE').'/transactions' ;
+        $url = 'https://api.zoop.ws/v1/marketplaces/'.$this->marplace_id.'/transactions' ;
 
-        $data['on_behalf_of'] = config('app.ZOOP_SELLER') ;
+        $data['on_behalf_of'] = $this->seller ;
         $data['payment_type'] = 'credit' ;
         $data['statement_descriptor'] = 'CLICA' ;
         $data['customer'] = $customer_id ;
@@ -130,9 +205,9 @@ class Zoop
     {
 
 
-        if($this->user->external_payment_id) {
+        if($this->buyer->external_payment_id) {
 
-            $url = 'https://api.zoop.ws/v1/marketplaces/'.config('app.ZOOP_MARKETPLACE').'/cards/tokens' ;
+            $url = 'https://api.zoop.ws/v1/marketplaces/'.$this->marplace_id.'/cards/tokens' ;
 
             $response = Http::withHeaders([
                 'Accept' => 'application/json',
@@ -149,16 +224,16 @@ class Zoop
             $card->first_digits = $data->card->first4_digits ;
             $card->brand = $data->card->card_brand ;
             $card->default_card = true ;
-            $card->users_id = $this->user->id ;
+            $card->users_id = $this->buyer->id ;
             $card->save();
             // associar
 
-            $url = 'https://api.zoop.ws/v1/marketplaces/'.config('app.ZOOP_MARKETPLACE').'/cards' ;
+            $url = 'https://api.zoop.ws/v1/marketplaces/'.$this->marplace_id.'/cards' ;
 
             $data = null ;
 
             $data['token'] = $token_card ;
-            $data['customer'] = $this->user->external_payment_id ;
+            $data['customer'] = $this->buyer->external_payment_id ;
 
             $response = Http::withHeaders([
                 'Accept' => 'application/json',
@@ -166,11 +241,8 @@ class Zoop
             ])->post($url, $data);
 
             $data = json_decode($response->body(), true) ;
-
-
-
-
             return true ;
+
         } else {
 
             try {
@@ -186,7 +258,7 @@ class Zoop
 
     public function getSellers()
     {
-        $url = 'https://api.zoop.ws/v1/marketplaces/'.config('app.ZOOP_MARKETPLACE').'/sellers?limit=20&sort=time-descending&offset=0' ;
+        $url = 'https://api.zoop.ws/v1/marketplaces/'.$this->marplace_id.'/sellers?limit=20&sort=time-descending&offset=0' ;
 
         $response = Http::withHeaders([
             'Accept' => 'application/json',
@@ -198,7 +270,7 @@ class Zoop
 
     public function getBuyers()
     {
-        $url = 'https://api.zoop.ws/v1/marketplaces/'.config('app.ZOOP_MARKETPLACE').'/buyers' ;
+        $url = 'https://api.zoop.ws/v1/marketplaces/'.$this->marplace_id.'/buyers' ;
 
         $response = Http::withHeaders([
             'Accept' => 'application/json',
@@ -212,7 +284,7 @@ class Zoop
 
     public function getSellerByCpf($cnpj)
     {
-        $url = 'https://api.zoop.ws/v1/marketplaces/'.config('app.ZOOP_MARKETPLACE').'/sellers/search?ein='.$cnpj ;
+        $url = 'https://api.zoop.ws/v1/marketplaces/'.$this->marplace_id.'/sellers/search?ein='.$cnpj ;
 
         $response = Http::withHeaders([
             'Accept' => 'application/json',
@@ -226,7 +298,7 @@ class Zoop
 
     public function getBuyerByCpf($cpf)
     {
-        $url = 'https://api.zoop.ws/v1/marketplaces/'.config('app.ZOOP_MARKETPLACE').'/buyers/search?taxpayer_id='.$cpf ;
+        $url = 'https://api.zoop.ws/v1/marketplaces/'.$this->marplace_id.'/buyers/search?taxpayer_id='.$cpf ;
 
         $response = Http::withHeaders([
             'Accept' => 'application/json',
@@ -254,7 +326,7 @@ class Zoop
 
     public function getPlan()
     {
-        $url = 'https://api.zoop.ws/v1/marketplaces/'.config('app.ZOOP_MARKETPLACE').'/plans' ;
+        $url = 'https://api.zoop.ws/v1/marketplaces/'.$this->marplace_id.'/plans' ;
 
         $response = Http::withHeaders([
             'Accept' => 'application/json',
@@ -268,7 +340,7 @@ class Zoop
 
     public function getPlanById($id)
     {
-        $url = 'https://api.zoop.ws/v1/marketplaces/'.config('app.ZOOP_MARKETPLACE').'/plans/'.$id ;
+        $url = 'https://api.zoop.ws/v1/marketplaces/'.$this->marplace_id.'/plans/'.$id ;
 
         $response = Http::withHeaders([
             'Accept' => 'application/json',

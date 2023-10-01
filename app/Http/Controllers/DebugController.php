@@ -9,7 +9,7 @@ class DebugController extends Controller
 {
     public function debug()
     {
-        $zoop = new Zoop() ;
+        $zoop = new Zoop(true) ;
         dd($zoop->getSellers()) ;
     }
 }

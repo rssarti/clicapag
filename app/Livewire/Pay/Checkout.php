@@ -2,11 +2,16 @@
 
 namespace App\Livewire\Pay;
 
+use App\Livewire\Forms\FormPayment;
+use App\Models\Buyer;
 use App\Models\User;
+use App\Services\BuyerService;
 use App\Services\PaymentService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Rule;
 use Livewire\Component;
+
 
 class Checkout extends Component
 {
@@ -14,13 +19,8 @@ class Checkout extends Component
     public $data ;
     public $methodError = false ;
     public $link ;
-    public $form = [
-        'type_payment' => '',
-        'address' => '',
-        'address_district' => '',
-        'address_city' => '',
-        'address_state' => '',
-    ] ;
+
+    public FormPayment $form;
 
     public function mount($uuid)
     {
@@ -45,32 +45,36 @@ class Checkout extends Component
     {
 
 
-        if(Str::length($this->form['address_zip_code'])==9) {
+        if(Str::length($this->form->address_zip_code)==9) {
 
-            $data = Http::get('https://viacep.com.br/ws/'.Str::remove("-", $this->form['address_zip_code']).'/json/');
+            $data = Http::get('https://viacep.com.br/ws/'.Str::remove("-", $this->form->address_zip_code).'/json/');
             $address = json_decode($data->body(), true) ;
-            $this->form['address'] = $address['logradouro'] ;
-            $this->form['address_district'] = $address['bairro'] ;
-            $this->form['address_city'] = $address['localidade'] ;
-            $this->form['address_state'] = $address['uf'] ;
+            $this->form->address = $address['logradouro'] ;
+            $this->form->address_neighborhood = $address['bairro'] ;
+            $this->form->address_city = $address['localidade'] ;
+            $this->form->address_state = $address['uf'] ;
 
         }
     }
 
     public function save()
     {
-        if($this->form['type_payment']=="") {
-            $this->methodError = true ;
-            return false ;
-        }
+
+        $buyer = new BuyerService() ;
+        $form = $this->form->all() ;
+
+        $seller = $buyer->store($form);
+
+        $buyer = Buyer::find($seller->id) ;
 
         $payment = new PaymentService() ;
         $payment->setClientPayment($this->form);
         $payment->setLink($this->data['id']);
         $payment->setSellerReceipt('direct');
         $payment->setUserCreate($this->data['user_id']);
-        $payment->setType($this->form['type_payment']);
+        $payment->setType($form['type_payment']);
+        $payment->setBuyer($buyer);
         $payment->setAmount($this->data['amount']);
-        $payment->save();
+        $payment->createPayment();
     }
 }

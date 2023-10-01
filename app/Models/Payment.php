@@ -16,5 +16,7 @@ class Payment extends Model
      */
     protected $casts = [
         'client' => 'array',
+        'data_payment' => 'array',
+        'sales_receipt' => 'array',
     ];
 }

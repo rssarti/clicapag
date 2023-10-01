@@ -21,8 +21,11 @@ return new class extends Migration
             $table->json('client')->nullable() ;
             $table->float('amount_min_installmes')->default(0) ;
             $table->integer('max_installments')->default(12) ;
+            $table->integer('installments')->default(1) ;
 
-            $table->enum('status', ['A', 'PG', 'V', 'D'])->default(false) ;
+            // A = ABERTO /PEN = PENDENTE / PG = PAGO / V = VENCIDO, D = DELETADO
+            $table->string('type_payment', 2)->default('P') ;
+            $table->enum('status', ['A', 'PEN', 'PG', 'V', 'D'])->default('PEN') ;
             $table->json('data_payment')->nullable() ;
             $table->json('sales_receipt')->nullable() ;
 

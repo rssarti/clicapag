@@ -45,4 +45,15 @@
             @livewireScripts
         </div>
     </body>
+
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+            $(document).ready(function() {
+                $('.cep').mask('00000-000');
+
+                $('.celphone').mask('(00) 00000-0000');
+            }) ;
+        }) ;
+
+    </script>
 </html>

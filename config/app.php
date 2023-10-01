@@ -22,6 +22,10 @@ return [
     'ZOOP_MARKETPLACE' => env('ZOOP_MARKETPLACE'),
     'ZOOP_SELLER' => env('ZOOP_SELLER'),
 
+    'ZOOP_KEY_DEV' => env('ZOOP_KEY_DEV'),
+    'ZOOP_MARKETPLACE_DEV' => env('ZOOP_MARKETPLACE_DEV'),
+    'ZOOP_SELLER_DEV' => env('ZOOP_SELLER_DEV'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment
