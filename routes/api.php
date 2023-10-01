@@ -20,6 +20,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::post('/webhook/payment/zoop', [\App\Http\Controllers\ApiController::class, 'logWebHook']) ;
+
 Route::post('/payment', function (Request $request) {
     return response()->json([
         "amount" => "1",
