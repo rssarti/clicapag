@@ -24,9 +24,9 @@ Route::get('/payment', function () {
 
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified', 'banking'])->name('dashboard');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'banking'])->group(function () {
     Route::get('products', \App\Livewire\Products\Home::class)->name('products') ;
     Route::get('products/link', \App\Livewire\Products\Link::class)->name('link') ;
     Route::get('products/link/form', \App\Livewire\Products\LinkForm::class)->name('link.form') ;
@@ -40,6 +40,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::get('/contract', \App\Livewire\Contract::class)->middleware('auth', 'verified')->name('contract') ;
 
 Route::get('pay/{uuid}', \App\Livewire\Pay\Link::class)->name('pay.link') ;
 Route::get('pay/{uuid}/checkout', \App\Livewire\Pay\Checkout::class)->name('pay.checkout') ;

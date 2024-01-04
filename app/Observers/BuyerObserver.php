@@ -12,11 +12,8 @@ class BuyerObserver
      */
     public function created(Buyer $buyer): void
     {
-
-
         $zoop = new Zoop() ;
         $zoop->createBuyer($buyer) ;
-
     }
 
     /**

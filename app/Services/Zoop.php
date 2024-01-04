@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Buyer;
+use App\Models\Card;
+use App\Models\Contract;
 use App\Models\UserCard;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -35,6 +37,7 @@ class Zoop
             $this->marplace_id = config('app.ZOOP_MARKETPLACE_DEV') ;
             $this->seller = config('app.ZOOP_SELLER_DEV') ;
         }
+
 
     }
 
@@ -96,6 +99,8 @@ class Zoop
         $data['description'] = $payment['description'] ;
         $data['currency'] = 'BRL' ;
         $data['amount'] = $payment['amount'] ;
+
+
 
 
         $response = Http::withHeaders([
@@ -171,7 +176,7 @@ class Zoop
 
     }
 
-    public function cobrar($customer_id, $amount)
+    public function cobrar($customer_id, $amount, $currency='BRL')
     {
         $url = 'https://api.zoop.ws/v1/marketplaces/'.$this->marplace_id.'/transactions' ;
 
@@ -180,8 +185,7 @@ class Zoop
         $data['statement_descriptor'] = 'CLICA' ;
         $data['customer'] = $customer_id ;
         $data['amount'] = $amount ;
-        $data['currency'] = 'BRL' ;
-
+        $data['currency'] = $currency ;
 
         $response = Http::withHeaders([
             'Accept' => 'application/json',
@@ -189,8 +193,6 @@ class Zoop
         ])->post($url, $data);
 
         $data = json_decode($response->body()) ;
-
-        dd($data) ;
 
         if($data->status=="succeeded") {
             return $data ;
@@ -203,9 +205,9 @@ class Zoop
 
     public function setCard($data)
     {
+        $last_digit =  substr($data['card_number'], -4);
 
-
-        if($this->buyer->external_payment_id) {
+        if($this->buyer->external_id_payment) {
 
             $url = 'https://api.zoop.ws/v1/marketplaces/'.$this->marplace_id.'/cards/tokens' ;
 
@@ -218,13 +220,14 @@ class Zoop
 
             $token_card = $data->id ;
 
-            $card = new UserCard() ;
-            $card->external_id = $data->card->id ;
-            $card->last_digits = $data->card->first4_digits ;
-            $card->first_digits = $data->card->first4_digits ;
-            $card->brand = $data->card->card_brand ;
-            $card->default_card = true ;
-            $card->users_id = $this->buyer->id ;
+            $card = new Card() ;
+            $card->external_id_card = $data->card->id ;
+            $card->holder_name = $data->card->holder_name ;
+            $card->first_digit = $data->card->first4_digits ;
+            $card->last_digit = $last_digit ;
+            $card->valid = $data->card->is_valid ;
+            $card->card_brand = $data->card->card_brand ;
+            $card->buyer_id = $this->buyer->id ;
             $card->save();
             // associar
 
@@ -233,7 +236,7 @@ class Zoop
             $data = null ;
 
             $data['token'] = $token_card ;
-            $data['customer'] = $this->buyer->external_payment_id ;
+            $data['customer'] = $this->buyer->external_id_payment ;
 
             $response = Http::withHeaders([
                 'Accept' => 'application/json',
@@ -241,12 +244,12 @@ class Zoop
             ])->post($url, $data);
 
             $data = json_decode($response->body(), true) ;
+
             return true ;
 
         } else {
 
             try {
-                $this->createBuyer() ;
                 $this->setCard($data);
             } catch (\Exception $e) {
                 Log::error("erro na criação do Buyer", $e);

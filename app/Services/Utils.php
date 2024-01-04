@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class Utils
 {
@@ -123,5 +124,12 @@ class Utils
         return Transaction::where('user_id', $user->id)
             ->where('status', 'succeeded')
             ->sum('amount');
+    }
+
+    static function consultaCep($cep)
+    {
+        $response = \Http::get('viacep.com.br/ws/'.Str::remove('-', $cep).'/json/');
+        return json_decode($response->body());
+
     }
 }

@@ -21,6 +21,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post('/webhook/payment/zoop', [\App\Http\Controllers\ApiController::class, 'logWebHook']) ;
+Route::post('/buyer/create', [\App\Http\Controllers\ApiController::class, 'createBuyer']) ;
+Route::post('/buyer/card', [\App\Http\Controllers\ApiController::class, 'cardBuyer']) ;
+Route::post('/buyer/pay', [\App\Http\Controllers\ApiController::class, 'payCard']) ;
 
 Route::post('/payment', function (Request $request) {
     return response()->json([
@@ -29,6 +32,7 @@ Route::post('/payment', function (Request $request) {
         "seller_id" => "7f998395e5de4f2aa700d46d8079cbcd"
     ]) ;
 }) ;
+
 Route::post('/auth', function (Request $request) {
     $request->validate([
         'email' => 'required|email',

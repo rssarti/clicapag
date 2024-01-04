@@ -16,12 +16,15 @@ class Buyer extends Model
         'phone_number',
         'taxpayer_id',
         'address',
+        'birthdate',
+        'hash',
         'address_n',
         'address_complement',
         'address_neighborhood',
         'address_city',
         'address_state',
-        'address_zip_code'
+        'address_zip_code',
+        'contract_id'
     ] ;
 
     /*
