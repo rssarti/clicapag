@@ -65,7 +65,7 @@ class BuyerService
 
         if($pay->status=='succeeded') {
             $payment->type_payment = 'PG' ;
-            Mail::to($this->contract->business_email)->send(new PaymentSuccess());
+            Mail::to($this->contract->business_email)->send(new PaymentSuccess((float)$pay->amount));
         } else {
             $payment->type_payment = 'D' ;
         }

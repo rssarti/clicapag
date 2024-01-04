@@ -13,14 +13,14 @@ class DebugController extends Controller
 {
     public function debug()
     {
-        $amount = 1 ;
-        Mail::to("rs.sarti@gmail.com")->send(new PaymentSuccess($amount));
+//        $amount = 1 ;
+//        Mail::to("rs.sarti@gmail.com")->send(new PaymentSuccess($amount));
 
-//        $zoop = new Zoop() ;
-//
-//        $data = $zoop->cobrar() ;
-//
-//        dd($data) ;
+        $zoop = new Zoop() ;
+
+        $data = $zoop->getSellers() ;
+
+        dd($data) ;
 
         //
 //        $this->processDataMcc($data);
